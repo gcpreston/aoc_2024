@@ -1,18 +1,16 @@
 defmodule Aoc2024 do
-  @moduledoc """
-  Documentation for `Aoc2024`.
-  """
+  @input_path "./input"
 
-  @doc """
-  Hello world.
+  @spec input_for(integer()) :: String.t()
+  def input_for(day) do
+    padded_day =
+      Integer.to_string(day)
+      |> String.pad_leading(2, "0")
 
-  ## Examples
+    {:ok, content} =
+      Path.join(@input_path, padded_day <> ".txt")
+      |> File.read()
 
-      iex> Aoc2024.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    content
   end
 end
