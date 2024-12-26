@@ -1,9 +1,7 @@
 defmodule Aoc2024.Day01 do
-  @day_number 1
-
-  defp input_left_and_right do
+  defp input_left_and_right(input) do
     input_lines =
-      Aoc2024.input_for(@day_number)
+      input
       |> String.trim()
       |> String.split("\n")
 
@@ -15,16 +13,16 @@ defmodule Aoc2024.Day01 do
     {left, right}
   end
 
-  def part1 do
-    {left, right} = input_left_and_right()
+  def part1(input) do
+    {left, right} = input_left_and_right(input)
 
     Enum.zip(left, right)
     |> Enum.map(fn {l, r} -> abs(l - r) end)
     |> Enum.sum()
   end
 
-  def part2 do
-    {left, right} = input_left_and_right()
+  def part2(input) do
+    {left, right} = input_left_and_right(input)
 
     occurrences = Enum.reduce(right, %{}, fn r, acc ->
       Map.update(acc, r, 1, fn r_old -> r_old + 1 end)
