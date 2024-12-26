@@ -43,9 +43,9 @@ defmodule Aoc2024.Day02 do
     is_safe_p2?(rest, {first, nil}, false)
   end
 
-  def is_safe_p2?([] = _report, _acc, _fault_flag), do: true
+  defp is_safe_p2?([] = _report, _acc, _fault_flag), do: true
 
-  def is_safe_p2?([level | rest], {prev, operator}, fault_flag) do
+  defp is_safe_p2?([level | rest], {prev, operator}, fault_flag) do
     diff = prev - level
 
     operator =
@@ -57,7 +57,7 @@ defmodule Aoc2024.Day02 do
 
     cond do
       abs(diff) <= 3 && abs(diff) > 0 && apply(:"Elixir.Kernel", operator, [diff, 0]) ->
-        is_safe_p2?(rest, {level, operator}, fault_flag)
+        is_safe_p2?(rest, {level, operator}, fault_flag) || is_safe_p2?(rest, {prev, operator}, true)
 
       fault_flag ->
         false
@@ -65,6 +65,16 @@ defmodule Aoc2024.Day02 do
       true ->
         is_safe_p2?(rest, {prev, operator}, true)
     end
+  end
+
+  defp is_safe_p2_new?(report) do
+    reports_with_drops =
+      for i <- 0..(length(report) - 1) do
+        List.delete_at(report, i)
+      end
+    possible_reports = [report | reports_with_drops]
+
+    Enum.any?(possible_reports, &is_safe?/1)
   end
 
   def part2(input) do
@@ -78,7 +88,7 @@ defmodule Aoc2024.Day02 do
 
     reports
     |> Enum.reduce(0, fn report, count ->
-      if is_safe_p2?(report) do
+      if is_safe_p2_new?(report) do
         count + 1
       else
         count
