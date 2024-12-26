@@ -38,4 +38,51 @@ defmodule Aoc2024.Day02 do
       end
     end)
   end
+
+  def is_safe_p2?([first | rest]) do
+    is_safe_p2?(rest, {first, nil}, false)
+  end
+
+  def is_safe_p2?([] = _report, _acc, _fault_flag), do: true
+
+  def is_safe_p2?([level | rest], {prev, operator}, fault_flag) do
+    diff = prev - level
+
+    operator =
+      if is_nil(operator) do
+        if diff > 0, do: :>, else: :<
+      else
+        operator
+      end
+
+    cond do
+      abs(diff) <= 3 && abs(diff) > 0 && apply(:"Elixir.Kernel", operator, [diff, 0]) ->
+        is_safe_p2?(rest, {level, operator}, fault_flag)
+
+      fault_flag ->
+        false
+
+      true ->
+        is_safe_p2?(rest, {prev, operator}, true)
+    end
+  end
+
+  def part2(input) do
+    # IDEA
+    # - as we iterate through the list, if there is no fault yet, it's good if:
+    #   * all conditions are met for this index
+    #   * all conditions are met with fault flag set while removing current value
+    #   * all conditions are met with fault flag set while removing previous value
+
+    reports = parse_input(input)
+
+    reports
+    |> Enum.reduce(0, fn report, count ->
+      if is_safe_p2?(report) do
+        count + 1
+      else
+        count
+      end
+    end)
+  end
 end
