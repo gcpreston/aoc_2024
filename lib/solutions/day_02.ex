@@ -57,7 +57,8 @@ defmodule Aoc2024.Day02 do
 
     cond do
       abs(diff) <= 3 && abs(diff) > 0 && apply(:"Elixir.Kernel", operator, [diff, 0]) ->
-        is_safe_p2?(rest, {level, operator}, fault_flag) || is_safe_p2?(rest, {prev, operator}, true)
+        is_safe_p2?(rest, {level, operator}, fault_flag) ||
+          is_safe_p2?(rest, {prev, operator}, true)
 
       fault_flag ->
         false
@@ -72,6 +73,7 @@ defmodule Aoc2024.Day02 do
       for i <- 0..(length(report) - 1) do
         List.delete_at(report, i)
       end
+
     possible_reports = [report | reports_with_drops]
 
     Enum.any?(possible_reports, &is_safe?/1)

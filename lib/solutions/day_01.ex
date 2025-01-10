@@ -24,9 +24,10 @@ defmodule Aoc2024.Day01 do
   def part2(input) do
     {left, right} = input_left_and_right(input)
 
-    occurrences = Enum.reduce(right, %{}, fn r, acc ->
-      Map.update(acc, r, 1, fn r_old -> r_old + 1 end)
-    end)
+    occurrences =
+      Enum.reduce(right, %{}, fn r, acc ->
+        Map.update(acc, r, 1, fn r_old -> r_old + 1 end)
+      end)
 
     left
     |> Enum.map(fn l -> Map.get(occurrences, l, 0) * l end)
