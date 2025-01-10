@@ -61,16 +61,19 @@ defmodule Aoc2024.Day04Test do
     end
   end
 
-  describe "continue_matches/3" do
-    test "sets matches to continue", %{acc: acc} do
-      space = {0, 0}
-      matches_to_continue = [{0, -1}, {-1, 0}]
-      new_acc = Day04.continue_matches(acc, space, matches_to_continue)
+  describe "is_x_mas?/2" do
+    test "doesn't work on MAM SAS" do
+      input = """
+      XXXXX
+      XMXSX
+      XXAXX
+      XSXMX
+      XXXXX
+      """
 
-      assert %{
-        {0, 1} => %{{0, -1} => true, {-1, 0} => nil, {-1, -1} => nil, {-1, 1} => nil},
-        {1, 0} => %{{0, -1} => nil, {-1, 0} => true, {-1, -1} => nil, {-1, 1} => nil}
-      } = new_acc
+      {data, _rc, _cc} = Day04.parse_input(input)
+
+      refute Day04.is_x_mas?(data, {2, 2})
     end
   end
 

@@ -1,4 +1,48 @@
 defmodule Aoc2024.Day04 do
+  ## Part 2
+
+  # IDEA
+  # 1. Find all As within {1, 1} : {n-1, n-1}
+  # 2. Get corner values
+  # 3. Ensure 2 Ms 2 Ss, where like letters are adjacent
+
+  defp get_a_positions(data, row_count, col_count) do
+    for r <- 1..(row_count - 2) do
+      for c <- 1..(col_count - 2) do
+        if data[{r, c}] == 3 do
+          {r, c}
+        end
+      end
+      |> Enum.filter(&(!is_nil(&1)))
+    end
+    |> List.flatten()
+  end
+
+  def is_x_mas?(data, pos) do
+    corners_delta = [{-1, -1}, {-1, 1}, {1, -1}, {1, 1}]
+    corners_pos = Enum.map(corners_delta, fn cd -> pos_add(pos, cd) end)
+
+    # condition
+    # - 2 Ms 2 Ss
+    # - either {-1, -1}, {-1, 1} are the same OR {-1, -1}, {1, -1} are the same
+
+    corners_vals = Enum.map(corners_pos, fn cp -> data[cp] end)
+
+    Enum.frequencies(corners_vals) == %{2 => 2, 4 => 2} &&
+      (data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {-1, 1})] ||
+      data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {1, -1})])
+  end
+
+  def part2(input) do
+    {data, row_count, col_count} = parse_input(input)
+
+    get_a_positions(data, row_count, col_count)
+    |> Enum.filter(fn pos -> is_x_mas?(data, pos) end)
+    |> Enum.count()
+  end
+
+  ## Part 1
+
   def parse_input(input) do
     input_lines = input |> String.trim() |> String.split("\n")
 
