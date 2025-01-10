@@ -1,4 +1,32 @@
 defmodule Aoc2024.Day05 do
+  defp reorder_update(update, rules), do: reorder_update(update, [], rules)
+  defp reorder_update([], prevs, _rules), do: Enum.reverse(prevs)
+
+  defp reorder_update([cur | rest], prevs, rules) do
+    in_order_prevs = Enum.reverse(prevs)
+    first_invalid_index = Enum.find_index(in_order_prevs, fn prev -> prev in Map.get(rules, cur, []) end)
+
+    if first_invalid_index do
+      correct_up_to = if first_invalid_index == 0, do: [], else: Enum.slice(in_order_prevs, 0..(first_invalid_index - 1))
+      # in_order_prevs[:first_invalid_index] + [cur] + in_order_prevs[first_invalid_index:] + rest
+      updated_update = correct_up_to ++ [cur] ++ Enum.slice(in_order_prevs, first_invalid_index..-1//1) ++ rest
+      reorder_update(updated_update, rules)
+    else
+      reorder_update(rest, [cur | prevs], rules)
+    end
+  end
+
+  def part2(input) do
+    {rules, updates} = parse_input(input)
+
+    collective_rules = collect_rules(rules)
+
+    Enum.reject(updates, &update_is_valid?(&1, collective_rules))
+    |> Enum.map(&(reorder_update(&1, collective_rules)))
+    |> Enum.map(&get_middle/1)
+    |> Enum.sum()
+  end
+
   defp parse_input(input) do
     text = input |> String.trim()
 
