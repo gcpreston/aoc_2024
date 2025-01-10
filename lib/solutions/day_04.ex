@@ -30,7 +30,7 @@ defmodule Aoc2024.Day04 do
 
     Enum.frequencies(corners_vals) == %{2 => 2, 4 => 2} &&
       (data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {-1, 1})] ||
-      data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {1, -1})])
+         data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {1, -1})])
   end
 
   def part2(input) do
@@ -107,6 +107,7 @@ defmodule Aoc2024.Day04 do
         inv_neighbor_delta = pos_inv(neighbor_delta)
         inv_neighbor_space = pos_add(space, inv_neighbor_delta)
         inv_neighbor_rep = Map.get(data, inv_neighbor_space)
+
         # IO.puts("current #{current_rep} delta #{inspect(neighbor_delta)} neighbor #{inv_neighbor_rep}")
 
         # if data[neighbor] is subsequent to data[space]
@@ -128,7 +129,6 @@ defmodule Aoc2024.Day04 do
               acc
             end
           end
-
         else
           acc
         end
@@ -138,6 +138,7 @@ defmodule Aoc2024.Day04 do
       IO.inspect(matches, label: "incoming matches for {1, 3}")
       IO.inspect(new_matches, label: "new matches for {1, 3}")
     end
+
     new_matches
   end
 
@@ -150,6 +151,7 @@ defmodule Aoc2024.Day04 do
       Enum.reduce(matches_to_continue, acc, fn {neighbor_delta, diff}, acc ->
         inv_neighbor_delta = pos_inv(neighbor_delta)
         inv_neighbor = pos_add(space, inv_neighbor_delta)
+
         # IO.puts("inv delta and inv neighbor #{inspect(inv_neighbor_delta)} #{inspect(inv_neighbor)}")
 
         if Map.has_key?(acc, inv_neighbor) do
@@ -185,6 +187,7 @@ defmodule Aoc2024.Day04 do
       if rep in [1, 4] do
         # check if there are any completed matches to add to total
         new_completions = completion_count(matches)
+
         # if new_completions > 0, do: IO.inspect(new_completions, label: "Adding completions for space #{inspect(space)}")
         total + new_completions
       else
@@ -192,7 +195,8 @@ defmodule Aoc2024.Day04 do
       end
 
     # check if there are in-progress matches to continue
-    matches_to_continue = matching_neighbors(data, matches, space) # should handle X/S and M/A cases
+    # should handle X/S and M/A cases
+    matches_to_continue = matching_neighbors(data, matches, space)
     new_acc = continue_matches(acc, space, matches_to_continue)
 
     next_space = next_space(space, row_count, col_count)

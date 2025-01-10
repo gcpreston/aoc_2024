@@ -28,6 +28,7 @@ defmodule Aoc2024.Day04Test do
     XM
     AS
     """
+
     {data, row_count, col_count} = Day04.parse_input(input)
 
     assert row_count == 2
