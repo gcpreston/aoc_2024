@@ -1,17 +1,172 @@
 defmodule Aoc2024.Day04 do
-  defp parse_input(input) do
+  def parse_input(input) do
     input_lines = input |> String.trim() |> String.split("\n")
 
-    for {line, row} <- Enum.with_index(input_lines) do
-      for {char, col} <- Enum.with_index(String.graphemes(line)) do
-        {{row, col}, char}
+    data =
+      for {line, row} <- Enum.with_index(input_lines) do
+        for {char, col} <- Enum.with_index(String.graphemes(line)) do
+          rep =
+            case char do
+              "X" -> 1
+              "M" -> 2
+              "A" -> 3
+              "S" -> 4
+            end
+
+          {{row, col}, rep}
+        end
+      end
+      |> List.flatten()
+      |> Map.new()
+
+    row_count = length(input_lines)
+    col_count = String.length(hd(input_lines))
+
+    {data, row_count, col_count}
+  end
+
+  defp new_neighbor_match do
+    %{{-1, -1} => nil, {-1, 0} => nil, {-1, 1} => nil, {0, -1} => nil}
+  end
+
+  def build_acc(row_count, col_count) do
+    for r <- 0..(row_count - 1) do
+      for c <- 0..(col_count - 1) do
+        {{r, c}, new_neighbor_match()}
       end
     end
     |> List.flatten()
     |> Map.new()
   end
 
+  def next_space({r, c}, _row_count, col_count) when c < col_count - 1, do: {r, c + 1}
+  def next_space({r, _c}, row_count, _col_count) when r < row_count - 1, do: {r + 1, 0}
+  def next_space(_space, _row_count, _col_count), do: nil
+
+  defp completion_count(matches) do
+    Enum.count(matches, fn {_neighbor, maybe_match} -> maybe_match end)
+  end
+
+  defp pos_add({r1, c1}, {r2, c2}), do: {r1 + r2, c1 + c2}
+  defp pos_inv({r, c}), do: {r * -1, c * -1}
+
+  def matching_neighbors(data, matches, space) do
+    current_rep = Map.get(data, space)
+
+    # for neighbors in matches with truthy value
+    new_matches =
+      matches
+      |> Enum.filter(fn {_neighbor_delta, maybe_match} ->
+        maybe_match || current_rep in [1, 4]
+      end)
+      |> Enum.reduce([], fn {neighbor_delta, maybe_match}, acc ->
+        inv_neighbor_delta = pos_inv(neighbor_delta)
+        inv_neighbor_space = pos_add(space, inv_neighbor_delta)
+        inv_neighbor_rep = Map.get(data, inv_neighbor_space)
+        # IO.puts("current #{current_rep} delta #{inspect(neighbor_delta)} neighbor #{inv_neighbor_rep}")
+
+        # if data[neighbor] is subsequent to data[space]
+        if inv_neighbor_rep do
+          diff = current_rep - inv_neighbor_rep
+
+          if current_rep in [1, 4] do
+            if diff in [1, -1] do
+              [{neighbor_delta, diff} | acc]
+            else
+              acc
+            end
+          else
+            if diff == maybe_match do
+              # add neighbor to result set
+              # IO.inspect(neighbor_delta, label: "Adding for space #{inspect(space)}")
+              [{neighbor_delta, diff} | acc]
+            else
+              acc
+            end
+          end
+
+        else
+          acc
+        end
+      end)
+
+    if space == {1, 3} do
+      IO.inspect(matches, label: "incoming matches for {1, 3}")
+      IO.inspect(new_matches, label: "new matches for {1, 3}")
+    end
+    new_matches
+  end
+
+  def continue_matches(acc, space, matches_to_continue) do
+    # PROBLEM
+    # This has no sense of orientation. i.e. XMX will see a match in the right direction
+    # and continue it.
+    # IO.puts("Continuing matches #{inspect(matches_to_continue)} for space #{inspect(space)}")
+    new_acc =
+      Enum.reduce(matches_to_continue, acc, fn {neighbor_delta, diff}, acc ->
+        inv_neighbor_delta = pos_inv(neighbor_delta)
+        inv_neighbor = pos_add(space, inv_neighbor_delta)
+        # IO.puts("inv delta and inv neighbor #{inspect(inv_neighbor_delta)} #{inspect(inv_neighbor)}")
+
+        if Map.has_key?(acc, inv_neighbor) do
+          if inv_neighbor == {2, 2} do
+            IO.puts("Setting {2, 2} to true from space #{inspect(space)}")
+          end
+
+          put_in(acc, [inv_neighbor, neighbor_delta], diff)
+        else
+          acc
+        end
+      end)
+
+    new_acc
+  end
+
+  def xmas_count(data, row_count, col_count) do
+    xmas_count(data, row_count, col_count, {0, 0}, build_acc(row_count, col_count), 0)
+  end
+
+  defp xmas_count(_data, _row_count, _col_count, nil, _acc, total), do: total
+
+  defp xmas_count(data, row_count, col_count, space, acc, total) do
+    rep = Map.get(data, space)
+    matches = Map.get(acc, space)
+
+    # if match?({3, _c}, space) do
+    #   dbg(space)
+    #   dbg(matches)
+    # end
+
+    new_total =
+      if rep in [1, 4] do
+        # check if there are any completed matches to add to total
+        new_completions = completion_count(matches)
+        # if new_completions > 0, do: IO.inspect(new_completions, label: "Adding completions for space #{inspect(space)}")
+        total + new_completions
+      else
+        total
+      end
+
+    # check if there are in-progress matches to continue
+    matches_to_continue = matching_neighbors(data, matches, space) # should handle X/S and M/A cases
+    new_acc = continue_matches(acc, space, matches_to_continue)
+
+    next_space = next_space(space, row_count, col_count)
+    xmas_count(data, row_count, col_count, next_space, new_acc, new_total)
+  end
+
   def part1(input) do
-    parse_input(input)
+    {data, row_count, col_count} = parse_input(input)
+
+    # IDEA
+    # - Assign to each space a data structure with 8 attributes, representing neighbors.
+    # - Iterate over input rows -> columns
+    # - If an X or an S is encountered and, add its count of subsequent neighbor indicators
+    #   to the total
+    # - For each space, if it is indicated to have all necessary subsequent neighbors
+    #   in any direction, and if the opposite direction contains the correct next value,
+    #   update the structure with the next neighbor to indicate a possible XMAS
+
+    xmas_count(data, row_count, col_count)
   end
 end
