@@ -67,22 +67,45 @@ defmodule Aoc2024.Day08 do
     end)
   end
 
+  defp all_freq_antinodes_part2(coords, num_rows, num_cols) do
+    combs = combinations(2, coords)
+
+    Enum.reduce(combs, MapSet.new(), fn [pos1, pos2], acc ->
+      new_antinodes =
+        antinode_line(pos1, pos2, num_rows, num_cols)
+        |> MapSet.new()
+
+      MapSet.union(acc, new_antinodes)
+    end)
+  end
+
   defp all_antinodes(map, num_rows, num_cols) do
     Enum.reduce(map, MapSet.new(), fn {_freq, coords}, acc ->
       MapSet.union(acc, all_freq_antinodes(coords, num_rows, num_cols))
     end)
   end
 
-  # https://rosettacode.org/wiki/Combinations#Elixir
-  def combinations(0, _), do: [[]]
-  def combinations(_, []), do: []
+  def all_antinodes_part2(map, num_rows, num_cols) do
+    Enum.reduce(map, MapSet.new(), fn {_freq, coords}, acc ->
+      MapSet.union(acc, all_freq_antinodes_part2(coords, num_rows, num_cols))
+    end)
+  end
 
-  def combinations(m, [h | t]) do
+  # https://rosettacode.org/wiki/Combinations#Elixir
+  defp combinations(0, _), do: [[]]
+  defp combinations(_, []), do: []
+
+  defp combinations(m, [h | t]) do
     for(l <- combinations(m - 1, t), do: [h | l]) ++ combinations(m, t)
   end
 
   def part1(input) do
     {map, num_rows, num_cols} = parse_input(input)
     all_antinodes(map, num_rows, num_cols) |> dbg() |> MapSet.size()
+  end
+
+  def part2(input) do
+    {map, num_rows, num_cols} = parse_input(input)
+    all_antinodes_part2(map, num_rows, num_cols) |> MapSet.size()
   end
 end
