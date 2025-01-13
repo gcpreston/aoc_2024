@@ -34,13 +34,33 @@ defmodule Aoc2024.Day08 do
     r >= 0 && r < num_rows && c >= 0 && c < num_cols
   end
 
+  defp antinode_line(pos1, pos2, num_rows, num_cols) do
+    delta = Common.pos_sub(pos2, pos1)
+
+    positive_ns =
+      Stream.unfold(0, fn n -> {n, n + 1} end)
+      |> Enum.take_while(fn n ->
+        in_bounds?(Common.pos_add(pos1, Common.pos_mul(delta, n)), num_rows, num_cols)
+      end)
+
+    negative_ns =
+      Stream.unfold(-1, fn n -> {n, n - 1} end)
+      |> Enum.take_while(fn n ->
+        in_bounds?(Common.pos_add(pos1, Common.pos_mul(delta, n)), num_rows, num_cols)
+      end)
+
+    positive_ns ++ negative_ns
+    |> Enum.map(fn n -> Common.pos_add(pos1, Common.pos_mul(delta, n)) end)
+  end
+
   defp all_freq_antinodes(coords, num_rows, num_cols) do
     combs = combinations(2, coords)
 
     Enum.reduce(combs, MapSet.new(), fn [pos1, pos2], acc ->
       new_antinodes =
-        possible_antinodes(pos1, pos2)
-        |> Enum.filter(fn antinode -> in_bounds?(antinode, num_rows, num_cols) end)
+        # possible_antinodes(pos1, pos2)
+        # |> Enum.filter(fn antinode -> in_bounds?(antinode, num_rows, num_cols) end)
+        antinode_line(pos1, pos2, num_rows, num_cols)
         |> MapSet.new()
 
       MapSet.union(acc, new_antinodes)
@@ -63,6 +83,6 @@ defmodule Aoc2024.Day08 do
 
   def part1(input) do
     {map, num_rows, num_cols} = parse_input(input)
-    all_antinodes(map, num_rows, num_cols) |> MapSet.size()
+    all_antinodes(map, num_rows, num_cols) |> dbg() |> MapSet.size()
   end
 end
