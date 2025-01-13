@@ -58,9 +58,8 @@ defmodule Aoc2024.Day08 do
 
     Enum.reduce(combs, MapSet.new(), fn [pos1, pos2], acc ->
       new_antinodes =
-        # possible_antinodes(pos1, pos2)
-        # |> Enum.filter(fn antinode -> in_bounds?(antinode, num_rows, num_cols) end)
-        antinode_line(pos1, pos2, num_rows, num_cols)
+        possible_antinodes(pos1, pos2)
+        |> Enum.filter(fn antinode -> in_bounds?(antinode, num_rows, num_cols) end)
         |> MapSet.new()
 
       MapSet.union(acc, new_antinodes)
