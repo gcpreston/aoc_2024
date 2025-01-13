@@ -1,4 +1,6 @@
 defmodule Aoc2024.Day04 do
+  alias Aoc2024.Common
+
   ## Part 2
 
   # IDEA
@@ -20,7 +22,7 @@ defmodule Aoc2024.Day04 do
 
   def is_x_mas?(data, pos) do
     corners_delta = [{-1, -1}, {-1, 1}, {1, -1}, {1, 1}]
-    corners_pos = Enum.map(corners_delta, fn cd -> pos_add(pos, cd) end)
+    corners_pos = Enum.map(corners_delta, fn cd -> Common.pos_add(pos, cd) end)
 
     # condition
     # - 2 Ms 2 Ss
@@ -29,8 +31,8 @@ defmodule Aoc2024.Day04 do
     corners_vals = Enum.map(corners_pos, fn cp -> data[cp] end)
 
     Enum.frequencies(corners_vals) == %{2 => 2, 4 => 2} &&
-      (data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {-1, 1})] ||
-         data[pos_add(pos, {-1, -1})] == data[pos_add(pos, {1, -1})])
+      (data[Common.pos_add(pos, {-1, -1})] == data[Common.pos_add(pos, {-1, 1})] ||
+         data[Common.pos_add(pos, {-1, -1})] == data[Common.pos_add(pos, {1, -1})])
   end
 
   def part2(input) do
@@ -91,9 +93,6 @@ defmodule Aoc2024.Day04 do
     Enum.count(matches, fn {_neighbor, maybe_match} -> maybe_match end)
   end
 
-  defp pos_add({r1, c1}, {r2, c2}), do: {r1 + r2, c1 + c2}
-  defp pos_inv({r, c}), do: {r * -1, c * -1}
-
   def matching_neighbors(data, matches, space) do
     current_rep = Map.get(data, space)
 
@@ -104,8 +103,8 @@ defmodule Aoc2024.Day04 do
         maybe_match || current_rep in [1, 4]
       end)
       |> Enum.reduce([], fn {neighbor_delta, maybe_match}, acc ->
-        inv_neighbor_delta = pos_inv(neighbor_delta)
-        inv_neighbor_space = pos_add(space, inv_neighbor_delta)
+        inv_neighbor_delta = Common.pos_inv(neighbor_delta)
+        inv_neighbor_space = Common.pos_add(space, inv_neighbor_delta)
         inv_neighbor_rep = Map.get(data, inv_neighbor_space)
 
         # IO.puts("current #{current_rep} delta #{inspect(neighbor_delta)} neighbor #{inv_neighbor_rep}")
@@ -149,8 +148,8 @@ defmodule Aoc2024.Day04 do
     # IO.puts("Continuing matches #{inspect(matches_to_continue)} for space #{inspect(space)}")
     new_acc =
       Enum.reduce(matches_to_continue, acc, fn {neighbor_delta, diff}, acc ->
-        inv_neighbor_delta = pos_inv(neighbor_delta)
-        inv_neighbor = pos_add(space, inv_neighbor_delta)
+        inv_neighbor_delta = Common.pos_inv(neighbor_delta)
+        inv_neighbor = Common.pos_add(space, inv_neighbor_delta)
 
         # IO.puts("inv delta and inv neighbor #{inspect(inv_neighbor_delta)} #{inspect(inv_neighbor)}")
 

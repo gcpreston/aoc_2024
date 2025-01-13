@@ -1,4 +1,6 @@
 defmodule Aoc2024.Day06 do
+  alias Aoc2024.Common
+
   ## Part 2
 
   # IDEA
@@ -109,7 +111,7 @@ defmodule Aoc2024.Day06 do
 
   defp move(position, direction) do
     delta = direction_to_pos_delta(direction)
-    pos_add(position, delta)
+    Common.pos_add(position, delta)
   end
 
   defp turn(direction), do: rem(direction + 1, 4)
@@ -123,6 +125,4 @@ defmodule Aoc2024.Day06 do
   defp direction_to_pos_delta(1), do: {0, 1}
   defp direction_to_pos_delta(2), do: {1, 0}
   defp direction_to_pos_delta(3), do: {0, -1}
-
-  defp pos_add({r1, c1}, {r2, c2}), do: {r1 + r2, c1 + c2}
 end
